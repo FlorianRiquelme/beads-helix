@@ -46,5 +46,5 @@ When flagging as unlinked:
 ## What This Is Not
 
 - Not a form to fill in at creation time — ideas are free-form
-- Not a gate enforced by tooling (yet — see beads-helix-jgj for future hooks)
+- Not a gate enforced by tooling at refinement time — hooks enforce the close gate (see .claude/hooks/)
 - Not a quality bar for the solution — only for the problem definition and scope

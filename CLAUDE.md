@@ -47,11 +47,12 @@ Research and design tickets produce findings that downstream tickets need. Knowl
 1. Write a 2-3 line summary of key findings into each blocked ticket's notes via `bd update <id> --notes="..."` — just enough to orient, with a pointer: "See <closed-id> for full research."
 2. If the findings change the approach for a blocked ticket, update that ticket's description too.
 
-**On starting a ticket with closed dependencies:**
-1. Read all closed dependencies (`bd show <dep-id>`) before beginning work.
-2. If a dependency's findings are missing from the current ticket's notes, flag the gap — the close-time push was skipped.
+**On starting a ticket — full-picture pull:**
+1. Read all closed dependencies (`bd show <dep-id>`) before beginning work — pull context backward.
+2. Read all open dependents (tickets that depend on THIS one) — pull purpose forward. Understanding what downstream tickets need as output shapes the work: what to prioritize, how much detail, what form the deliverable takes.
+3. If a dependency's findings are missing from the current ticket's notes, flag the gap — the close-time push was skipped.
 
-This is a push-at-close + pull-at-start pattern. The push keeps knowledge flowing; the pull catches gaps.
+This is **push-at-close + full-picture-pull-at-start**. Backward for context, forward for purpose.
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
