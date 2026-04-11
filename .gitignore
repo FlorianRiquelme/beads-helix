@@ -6,3 +6,9 @@
 
 # Research / brainstorm artifacts
 docs/research/
+
+# Track .claude/ for this project (it IS the plugin)
+!.claude/
+!.claude/settings.json
+!.claude/hooks/
+!.claude/hooks/*.sh
