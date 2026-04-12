@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { resolveSnapshotPath, refresh } from './snapshot.js';
-
-const args = process.argv.slice(2);
 
 function usage(): void {
   process.stderr.write(`Usage:
@@ -12,7 +11,7 @@ function usage(): void {
   process.exit(1);
 }
 
-function parseFlags(args: string[]): { repo?: string; force: boolean } {
+export function parseFlags(args: string[]): { repo?: string; force: boolean } {
   let repo: string | undefined;
   let force = false;
 
@@ -26,21 +25,21 @@ function parseFlags(args: string[]): { repo?: string; force: boolean } {
   return { repo, force };
 }
 
-async function main(): Promise<void> {
+export async function main(argv: string[]): Promise<void> {
   // Expect: helix snapshot <subcommand>
   // CLI is invoked as `helix snapshot path` or `helix snapshot refresh`
-  // When called via bin/helix, args[0] is "snapshot", args[1] is the subcommand
+  // When called via bin/helix, argv[0] is "snapshot", argv[1] is the subcommand
   // For direct invocation, handle both patterns
 
   let subcommand: string | undefined;
   let flagArgs: string[];
 
-  if (args[0] === 'snapshot') {
-    subcommand = args[1];
-    flagArgs = args.slice(2);
+  if (argv[0] === 'snapshot') {
+    subcommand = argv[1];
+    flagArgs = argv.slice(2);
   } else {
-    subcommand = args[0];
-    flagArgs = args.slice(1);
+    subcommand = argv[0];
+    flagArgs = argv.slice(1);
   }
 
   if (!subcommand) {
@@ -76,7 +75,10 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
-  process.stderr.write(`Fatal: ${err}\n`);
-  process.exit(1);
-});
+// Only run main() when this module is the entry point, not when imported by tests
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main(process.argv.slice(2)).catch((err) => {
+    process.stderr.write(`Fatal: ${err}\n`);
+    process.exit(1);
+  });
+}

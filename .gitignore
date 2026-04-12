@@ -12,6 +12,11 @@ node_modules/
 dist/
 *.tgz
 
+# Test artifacts
+coverage/
+reports/
+.stryker-tmp/
+
 # Track .claude/ for this project (it IS the plugin)
 !.claude/
 !.claude/settings.json
