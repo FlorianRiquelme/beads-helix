@@ -7,6 +7,11 @@
 # Research / brainstorm artifacts
 docs/research/
 
+# Node.js
+node_modules/
+dist/
+*.tgz
+
 # Track .claude/ for this project (it IS the plugin)
 !.claude/
 !.claude/settings.json

@@ -1,0 +1,32 @@
+{
+  "name": "beads-helix",
+  "version": "0.1.0",
+  "description": "Maturity-driven workflow layer on top of beads",
+  "type": "module",
+  "bin": {
+    "helix": "./dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./snapshot": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}
