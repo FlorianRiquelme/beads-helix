@@ -3,6 +3,7 @@ import { act, render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Board } from './Board';
+import { withRouter } from '../test-utils';
 
 const sampleSnapshot = {
   project_id: 'beads-helix',
@@ -135,7 +136,11 @@ function makeQueryClient(): QueryClient {
 }
 
 function withProviders(client: QueryClient, children: ReactNode) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      {withRouter(children)}
+    </QueryClientProvider>
+  );
 }
 
 beforeEach(() => {
@@ -159,7 +164,7 @@ describe('<Board />', () => {
     );
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    expect(screen.getByTestId('board-loading')).toBeInTheDocument();
+    expect(await screen.findByTestId('board-loading')).toBeInTheDocument();
     resolveFn({
       ok: true,
       status: 200,
@@ -175,9 +180,9 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    expect(await screen.findByRole('button', { name: /Idea card/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Refined card/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ready card/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /Idea card/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Refined card/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ready card/i })).toBeInTheDocument();
   });
 
   it('renders SNAPSHOT_NOT_FOUND empty state with helpful command', async () => {
@@ -215,7 +220,7 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByRole('button', { name: /Idea card/i });
+    await screen.findByRole('link', { name: /Idea card/i });
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     expect(MockEventSource.instances.length).toBe(1);
@@ -236,7 +241,7 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByRole('button', { name: /Idea card/i });
+    await screen.findByRole('link', { name: /Idea card/i });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     fireEvent.keyDown(window, { key: 'r' });
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
@@ -250,7 +255,7 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByRole('button', { name: /Idea card/i });
+    await screen.findByRole('link', { name: /Idea card/i });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const input = screen.getByPlaceholderText(/search/i);
     input.focus();
@@ -268,7 +273,7 @@ describe('<Board />', () => {
     const { unmount } = render(
       withProviders(client, <Board projectId="beads-helix" />),
     );
-    await screen.findByRole('button', { name: /Idea card/i });
+    await screen.findByRole('link', { name: /Idea card/i });
     unmount();
     expect(MockEventSource.instances[0].closed).toBe(true);
   });
@@ -281,10 +286,10 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByRole('button', { name: /Idea card/i });
+    await screen.findByRole('link', { name: /Idea card/i });
     fireEvent.change(screen.getByLabelText(/priority/i), { target: { value: '0' } });
-    expect(screen.queryByRole('button', { name: /Idea card/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Refined card/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Ready card/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Idea card/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Refined card/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Ready card/i })).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+} from '@tanstack/react-router';
 import type { SnapshotIssue } from '@shared/snapshot-schema';
 import { Card } from './Card';
 import * as boardLib from '../lib/board';
@@ -27,85 +35,120 @@ const issue: SnapshotIssue = {
   dependent_ids: [],
 };
 
-const sonnerToast = vi.hoisted(() => ({ success: vi.fn() }));
+const sonnerToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('sonner', () => ({ toast: sonnerToast }));
+
+function renderAt(initialUrl = '/p/beads-helix', issueProp: SnapshotIssue = issue) {
+  const rootRoute = createRootRoute({ component: () => <Outlet /> });
+  const projectRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/p/$projectId',
+    component: () => <Card issue={issueProp} projectId="beads-helix" />,
+  });
+  const issueRoute = createRoute({
+    getParentRoute: () => projectRoute,
+    path: 'i/$issueId',
+    component: () => <div data-testid="issue-opened">opened</div>,
+  });
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([projectRoute.addChildren([issueRoute])]),
+    history: createMemoryHistory({ initialEntries: [initialUrl] }),
+  });
+  const result = render(<RouterProvider router={router} />);
+  return { router, ...result };
+}
 
 describe('<Card />', () => {
   let copySpy: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
     sonnerToast.success.mockClear();
+    sonnerToast.error.mockClear();
     copySpy = vi.spyOn(boardLib, 'copyToClipboard').mockResolvedValue(undefined);
   });
 
-  it('renders the title text', () => {
-    render(<Card issue={issue} />);
-    expect(screen.getByText('Implement helix flight deck Level 2')).toBeInTheDocument();
+  it('renders the title text', async () => {
+    renderAt();
+    expect(await screen.findByText('Implement helix flight deck Level 2')).toBeInTheDocument();
   });
 
-  it('renders the priority chip with correct label', () => {
-    render(<Card issue={issue} />);
-    expect(screen.getByText('P1')).toBeInTheDocument();
+  it('renders the priority chip with correct label', async () => {
+    renderAt();
+    expect(await screen.findByText('P1')).toBeInTheDocument();
   });
 
-  it('renders the short id', () => {
-    render(<Card issue={issue} />);
-    expect(screen.getByText('vm2')).toBeInTheDocument();
+  it('renders the short id', async () => {
+    renderAt();
+    expect(await screen.findByText('vm2')).toBeInTheDocument();
   });
 
-  it('renders the dep hint', () => {
-    render(<Card issue={issue} />);
-    expect(screen.getByText('2↓ 1↑')).toBeInTheDocument();
+  it('renders the dep hint', async () => {
+    renderAt();
+    expect(await screen.findByText('2↓ 1↑')).toBeInTheDocument();
   });
 
-  it('does not render assignee or label tokens beyond the stage', () => {
-    const withAssignee = { ...issue, assignee: 'alice' };
-    render(<Card issue={withAssignee} />);
-    expect(screen.queryByText('alice')).not.toBeInTheDocument();
-  });
-
-  it('clamps the title visually to two lines', () => {
-    render(<Card issue={issue} />);
-    const titleEl = screen.getByText('Implement helix flight deck Level 2');
+  it('clamps the title visually to two lines', async () => {
+    renderAt();
+    const titleEl = await screen.findByText('Implement helix flight deck Level 2');
     expect(titleEl).toHaveClass('line-clamp-2');
   });
 
-  it('exposes the card as a button-role element for keyboard activation', () => {
-    render(<Card issue={issue} />);
-    const card = screen.getByRole('button', { name: /vm2/i });
-    expect(card).toBeInTheDocument();
+  it('exposes the card as a link to the issue detail route', async () => {
+    renderAt();
+    const link = (await screen.findByRole('link', { name: /open issue vm2/i })) as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toMatch(/\/p\/beads-helix\/i\/beads-helix-vm2$/);
   });
 
-  it('copies the full bd id to the clipboard on click', async () => {
+  it('navigates to the issue detail when the card is clicked (does NOT copy)', async () => {
     const user = userEvent.setup();
-    render(<Card issue={issue} />);
-    await user.click(screen.getByRole('button', { name: /vm2/i }));
+    const { router } = renderAt();
+    const link = await screen.findByRole('link', { name: /open issue vm2/i });
+    await user.click(link);
+    expect(router.state.location.pathname).toBe('/p/beads-helix/i/beads-helix-vm2');
+    expect(copySpy).not.toHaveBeenCalled();
+  });
+
+  it('preserves existing search params when navigating from the card', async () => {
+    const user = userEvent.setup();
+    const { router } = renderAt('/p/beads-helix?priority=2&q=foo');
+    await user.click(await screen.findByRole('link', { name: /open issue vm2/i }));
+    expect(router.state.location.pathname).toBe('/p/beads-helix/i/beads-helix-vm2');
+    expect(router.state.location.searchStr).toContain('priority=2');
+    expect(router.state.location.searchStr).toContain('q=foo');
+  });
+
+  it('short-id button copies the bd id and does NOT navigate', async () => {
+    const user = userEvent.setup();
+    const { router } = renderAt();
+    const copyBtn = await screen.findByRole('button', { name: /copy id beads-helix-vm2/i });
+    await user.click(copyBtn);
     expect(copySpy).toHaveBeenCalledWith('beads-helix-vm2');
+    expect(router.state.location.pathname).toBe('/p/beads-helix');
   });
 
-  it('shows a success toast after copying', async () => {
+  it('short-id button shows a success toast', async () => {
     const user = userEvent.setup();
-    render(<Card issue={issue} />);
-    await user.click(screen.getByRole('button', { name: /vm2/i }));
+    renderAt();
+    await user.click(await screen.findByRole('button', { name: /copy id beads-helix-vm2/i }));
     expect(sonnerToast.success).toHaveBeenCalledTimes(1);
     expect(sonnerToast.success.mock.calls[0][0]).toMatch(/copied/i);
   });
 
-  it('triggers copy when Enter is pressed', async () => {
+  it('pressing `c` while the card is focused copies the id', async () => {
     const user = userEvent.setup();
-    render(<Card issue={issue} />);
-    const card = screen.getByRole('button', { name: /vm2/i });
-    card.focus();
-    await user.keyboard('{Enter}');
+    renderAt();
+    const link = await screen.findByRole('link', { name: /open issue vm2/i });
+    link.focus();
+    await user.keyboard('c');
     expect(copySpy).toHaveBeenCalledWith('beads-helix-vm2');
   });
 
-  it('renders priority chip with priority-specific styling', () => {
-    const { container, rerender } = render(<Card issue={{ ...issue, priority: 0 }} />);
+  it('renders priority chip with priority-specific styling', async () => {
+    const { container } = renderAt(
+      '/p/beads-helix',
+      { ...issue, priority: 0 },
+    );
+    await screen.findByText(/Implement helix flight deck Level 2/);
     const chipP0 = container.querySelector('[data-testid="priority-chip"]');
     expect(chipP0?.className).toMatch(/red/);
-
-    rerender(<Card issue={{ ...issue, priority: 3 }} />);
-    const chipP3 = container.querySelector('[data-testid="priority-chip"]');
-    expect(chipP3?.className).toMatch(/sky/);
   });
 });

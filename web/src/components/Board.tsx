@@ -95,6 +95,7 @@ export function Board({
         loading={snapshotQuery.isLoading}
         error={snapshotQuery.error}
         buckets={buckets}
+        projectId={projectId}
       />
     </div>
   );
@@ -104,9 +105,10 @@ interface BoardBodyProps {
   loading: boolean;
   error: unknown;
   buckets: ReturnType<typeof bucketIssues>;
+  projectId: string;
 }
 
-function BoardBody({ loading, error, buckets }: BoardBodyProps) {
+function BoardBody({ loading, error, buckets, projectId }: BoardBodyProps) {
   if (loading) {
     return (
       <div data-testid="board-loading" className="grid grid-cols-3 gap-4">
@@ -125,7 +127,12 @@ function BoardBody({ loading, error, buckets }: BoardBodyProps) {
   return (
     <div className="grid min-h-0 flex-1 grid-cols-3 gap-4">
       {MATURITY_COLUMNS.map((stage) => (
-        <Column key={stage} stage={stage} issues={buckets[stage]} />
+        <Column
+          key={stage}
+          stage={stage}
+          issues={buckets[stage]}
+          projectId={projectId}
+        />
       ))}
     </div>
   );

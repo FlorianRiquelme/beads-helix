@@ -5,6 +5,7 @@ import { Card } from './Card';
 export interface ColumnProps {
   stage: MaturityColumn;
   issues: readonly SnapshotIssue[];
+  projectId: string;
 }
 
 const STAGE_LABEL: Record<MaturityColumn, string> = {
@@ -13,7 +14,7 @@ const STAGE_LABEL: Record<MaturityColumn, string> = {
   ready: 'ready',
 };
 
-export function Column({ stage, issues }: ColumnProps) {
+export function Column({ stage, issues, projectId }: ColumnProps) {
   const sorted = sortByPriorityThenUpdated(issues);
   const label = STAGE_LABEL[stage];
 
@@ -36,7 +37,9 @@ export function Column({ stage, issues }: ColumnProps) {
             no {label} issues
           </p>
         ) : (
-          sorted.map((issue) => <Card key={issue.id} issue={issue} />)
+          sorted.map((issue) => (
+            <Card key={issue.id} issue={issue} projectId={projectId} />
+          ))
         )}
       </div>
     </section>

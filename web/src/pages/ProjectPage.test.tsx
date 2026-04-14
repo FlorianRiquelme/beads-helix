@@ -155,8 +155,8 @@ describe('<ProjectPage /> URL search-param sync', () => {
       json: async () => sampleSnapshot,
     });
     renderAt('/p/beads-helix?priority=0');
-    await screen.findByRole('button', { name: /Refined card/i });
-    expect(screen.queryByRole('button', { name: /Idea card/i })).not.toBeInTheDocument();
+    await screen.findByRole('link', { name: /Refined card/i });
+    expect(screen.queryByRole('link', { name: /Idea card/i })).not.toBeInTheDocument();
     const select = screen.getByLabelText(/priority/i) as HTMLSelectElement;
     expect(select.value).toBe('0');
   });
@@ -168,7 +168,7 @@ describe('<ProjectPage /> URL search-param sync', () => {
       json: async () => sampleSnapshot,
     });
     const { router } = renderAt('/p/beads-helix');
-    await screen.findByRole('button', { name: /Idea card/i });
+    await screen.findByRole('link', { name: /Idea card/i });
     fireEvent.change(screen.getByLabelText(/priority/i), { target: { value: '1' } });
     await waitFor(() => {
       expect(router.state.location.search).toMatchObject({ priority: 1 });
