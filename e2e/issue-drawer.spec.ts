@@ -68,3 +68,60 @@ test.describe('Issue drawer — card click to detail route (8ua phase 2+3)', () 
     await expect(page).toHaveURL(/\/p\/beads-helix-e2e$/);
   });
 });
+
+test.describe('Issue drawer — detail content (8ua phase 4)', () => {
+  test('renders markdown description with headings', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    await expect(page.getByRole('heading', { name: 'Spike: investigate kanban density' })).toHaveCount(2);
+  });
+
+  test('renders notes section when present', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    await expect(page.getByTestId('issue-notes')).toBeVisible();
+    await expect(page.getByText('Pinned by FR for April review')).toBeVisible();
+  });
+
+  test('renders design in a collapsed details element', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    const details = page.getByTestId('issue-design');
+    await expect(details).toBeVisible();
+    const isOpen = await details.getAttribute('open');
+    expect(isOpen).toBeNull();
+  });
+
+  test('renders metadata badges (priority, type, status)', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('P2')).toBeVisible();
+    await expect(dialog.getByText('task')).toBeVisible();
+    await expect(dialog.getByText('open', { exact: true })).toBeVisible();
+  });
+
+  test('renders "Copy bd update" button', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    await expect(page.getByRole('button', { name: /copy bd update/i })).toBeVisible();
+  });
+});
+
+test.describe('Issue drawer — dependency weather (8ua phase 5)', () => {
+  test('renders dependency weather block with open blockers', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    await expect(page.getByTestId('dependency-weather')).toBeVisible();
+    await expect(page.getByTestId('rail-open-blockers')).toBeVisible();
+    await expect(page.getByTestId('rail-open-blockers').getByText('Promotion ceremony for refined stage')).toBeVisible();
+  });
+
+  test('renders open dependents rail', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/beads-helix-e2e-aaa');
+    await expect(page.getByTestId('rail-open-dependents')).toBeVisible();
+    await expect(page.getByTestId('rail-open-dependents').getByText('Card click copies bd id')).toBeVisible();
+  });
+});
+
+test.describe('Issue drawer — edge states (8ua phase 6)', () => {
+  test('direct navigation to unknown iid shows 404 inside drawer with board visible', async ({ page }) => {
+    await page.goto('/p/beads-helix-e2e/i/does-not-exist');
+    await expect(page.getByTestId('issue-drawer-not-found')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'idea' })).toBeVisible();
+  });
+});

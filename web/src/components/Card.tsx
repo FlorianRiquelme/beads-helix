@@ -10,12 +10,22 @@ import {
   shortId,
 } from '../lib/board';
 
+export type HighlightTint = 'red' | 'blue' | 'gold';
+
 export interface CardProps {
   issue: SnapshotIssue;
   projectId: string;
+  ghosted?: boolean;
+  highlightTint?: HighlightTint;
 }
 
-export function Card({ issue, projectId }: CardProps) {
+const TINT_RING: Record<HighlightTint, string> = {
+  red: 'ring-2 ring-red-500/50',
+  blue: 'ring-2 ring-blue-500/50',
+  gold: 'ring-2 ring-amber-400/50',
+};
+
+export function Card({ issue, projectId, ghosted, highlightTint }: CardProps) {
   const sid = shortId(issue.id);
 
   const copy = async (): Promise<void> => {
@@ -48,7 +58,7 @@ export function Card({ issue, projectId }: CardProps) {
       search={(prev) => prev}
       aria-label={`Open issue ${sid} — ${issue.title}. Press c to copy ${issue.id}.`}
       onKeyDown={handleKeyDown}
-      className="group block cursor-pointer rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left no-underline transition hover:border-neutral-700 hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
+      className={`group block cursor-pointer rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left no-underline transition hover:border-neutral-700 hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60${ghosted ? ' opacity-15' : ''}${highlightTint ? ` ${TINT_RING[highlightTint]}` : ''}`}
     >
       <p className="line-clamp-2 text-[0.9rem] font-medium leading-snug text-neutral-100">
         {issue.title}

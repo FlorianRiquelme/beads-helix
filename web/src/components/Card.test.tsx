@@ -142,6 +142,38 @@ describe('<Card />', () => {
     expect(copySpy).toHaveBeenCalledWith('beads-helix-vm2');
   });
 
+  it('applies ghosted styling when ghosted prop is true', async () => {
+    const rootRoute = createRootRoute({ component: () => <Outlet /> });
+    const projectRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/p/$projectId',
+      component: () => <Card issue={issue} projectId="beads-helix" ghosted />,
+    });
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([projectRoute]),
+      history: createMemoryHistory({ initialEntries: ['/p/beads-helix'] }),
+    });
+    render(<RouterProvider router={router} />);
+    const link = await screen.findByRole('link', { name: /open issue vm2/i });
+    expect(link).toHaveClass('opacity-15');
+  });
+
+  it('applies highlight tint when highlightTint is provided', async () => {
+    const rootRoute = createRootRoute({ component: () => <Outlet /> });
+    const projectRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/p/$projectId',
+      component: () => <Card issue={issue} projectId="beads-helix" highlightTint="red" />,
+    });
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([projectRoute]),
+      history: createMemoryHistory({ initialEntries: ['/p/beads-helix'] }),
+    });
+    render(<RouterProvider router={router} />);
+    const link = await screen.findByRole('link', { name: /open issue vm2/i });
+    expect(link.className).toMatch(/ring-red/);
+  });
+
   it('renders priority chip with priority-specific styling', async () => {
     const { container } = renderAt(
       '/p/beads-helix',
