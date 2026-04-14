@@ -2,11 +2,16 @@
 
 import { pathToFileURL } from 'node:url';
 import { resolveSnapshotPath, refresh } from './snapshot.js';
+import { runView } from './commands/view.js';
+import { runServe } from './commands/serve.js';
 
 function usage(): void {
   process.stderr.write(`Usage:
   helix snapshot path  [--repo <path>]           Print snapshot file path
   helix snapshot refresh [--repo <path>] [--force]  Generate/refresh snapshot
+  helix view [--repo <path>]                     Open flight deck for current project
+  helix deck [--repo <path>]                     Open cross-project flight deck
+  helix serve                                    (internal) Server subprocess entry
 `);
   process.exit(1);
 }
@@ -66,6 +71,39 @@ export async function main(argv: string[]): Promise<void> {
       if (result.status === 'error') {
         process.exit(1);
       }
+      break;
+    }
+
+    case 'view': {
+      const result = await runView({ cwd: flags.repo, forceDeck: false });
+      process.stdout.write(
+        `helix ${result.action} — ${result.mode} mode @ ${result.url}\n`,
+      );
+      await result.wait();
+      break;
+    }
+
+    case 'deck': {
+      const result = await runView({ cwd: flags.repo, forceDeck: true });
+      process.stdout.write(
+        `helix ${result.action} — deck @ ${result.url}\n`,
+      );
+      await result.wait();
+      break;
+    }
+
+    case 'serve': {
+      // Internal entry invoked by the spawn launcher. Reads config from env,
+      // writes HELIX_READY sentinel, then runs until SIGTERM.
+      await runServe({
+        env: process.env,
+        installSignalHandlers: true,
+      });
+      // runServe installs signal handlers that call process.exit on SIGTERM.
+      // Park the main promise so the event loop stays alive on the server.
+      await new Promise<void>(() => {
+        /* intentional: never resolves */
+      });
       break;
     }
 
