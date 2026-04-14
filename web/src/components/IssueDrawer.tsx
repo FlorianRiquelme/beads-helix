@@ -115,26 +115,26 @@ export function IssueDrawer({ projectId, issueId, open, onClose, filteredIssueId
               )}
             {issueQuery.data && (
               <article>
-                <h2 className="text-lg font-semibold leading-tight text-neutral-50">
+                <h2 className="text-lg font-semibold leading-tight tracking-tight text-neutral-50">
                   {issueQuery.data.title}
                 </h2>
 
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   <span
-                    className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[0.7rem] ${priorityChipClass(issueQuery.data.priority)}`}
+                    className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-2xs ${priorityChipClass(issueQuery.data.priority)}`}
                   >
                     {priorityLabel(issueQuery.data.priority)}
                   </span>
-                  <span className="inline-flex items-center rounded bg-neutral-800 px-1.5 py-0.5 font-mono text-[0.7rem] text-neutral-300">
+                  <span className="inline-flex items-center rounded bg-neutral-800 px-1.5 py-0.5 font-mono text-2xs text-neutral-300">
                     {issueQuery.data.issue_type}
                   </span>
-                  <span className="inline-flex items-center rounded bg-neutral-800 px-1.5 py-0.5 font-mono text-[0.7rem] text-neutral-300">
+                  <span className="inline-flex items-center rounded bg-neutral-800 px-1.5 py-0.5 font-mono text-2xs text-neutral-300">
                     {issueQuery.data.status}
                   </span>
                   {issueQuery.data.labels.map((label) => (
                     <span
                       key={label}
-                      className="inline-flex items-center rounded bg-sky-500/15 px-1.5 py-0.5 font-mono text-[0.7rem] text-sky-300 ring-1 ring-sky-500/30"
+                      className="inline-flex items-center rounded bg-sky-500/15 px-1.5 py-0.5 font-mono text-2xs text-sky-300 ring-1 ring-sky-500/30"
                     >
                       {label}
                     </span>
@@ -212,7 +212,7 @@ function DependencyWeatherBlock({ weather }: { weather: DependencyWeather }) {
       </h3>
       {weather.openBlockers.length > 0 && (
         <div data-testid="rail-open-blockers" className="space-y-1.5">
-          <p className="text-[0.7rem] font-medium uppercase text-red-400">Open blockers</p>
+          <p className="text-2xs font-medium uppercase text-red-400">Open blockers</p>
           {weather.openBlockers.map((r) => (
             <RailItem key={r.id} rail={r} tint="red" />
           ))}
@@ -220,7 +220,7 @@ function DependencyWeatherBlock({ weather }: { weather: DependencyWeather }) {
       )}
       {weather.closedDeps.length > 0 && (
         <div data-testid="rail-closed-deps" className="space-y-1.5">
-          <p className="text-[0.7rem] font-medium uppercase text-emerald-400">Closed deps</p>
+          <p className="text-2xs font-medium uppercase text-emerald-400">Closed deps</p>
           {weather.closedDeps.map((r) => (
             <RailItem key={r.id} rail={r} tint="green" showNotes />
           ))}
@@ -228,7 +228,7 @@ function DependencyWeatherBlock({ weather }: { weather: DependencyWeather }) {
       )}
       {weather.openDependents.length > 0 && (
         <div data-testid="rail-open-dependents" className="space-y-1.5">
-          <p className="text-[0.7rem] font-medium uppercase text-amber-400">Open dependents</p>
+          <p className="text-2xs font-medium uppercase text-amber-400">Open dependents</p>
           {weather.openDependents.map((r) => (
             <RailItem key={r.id} rail={r} tint="amber" showLabels />
           ))}
@@ -263,7 +263,7 @@ function RailItem({
           {rail.labels.map((l) => (
             <span
               key={l}
-              className="rounded bg-sky-500/15 px-1 font-mono text-[0.65rem] text-sky-300 ring-1 ring-sky-500/30"
+              className="rounded bg-sky-500/15 px-1 font-mono text-2xs text-sky-300 ring-1 ring-sky-500/30"
             >
               {l}
             </span>

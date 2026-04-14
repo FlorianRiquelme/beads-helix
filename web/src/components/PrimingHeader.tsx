@@ -14,7 +14,7 @@ export function PrimingHeader({ snapshot }: PrimingHeaderProps) {
   return (
     <header className="flex flex-col gap-1 border-b border-neutral-900 pb-3">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-base font-semibold text-neutral-100">{snapshot.project_id}</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-neutral-100">{snapshot.project_id}</h1>
         <p
           data-testid="priming-counts"
           className="font-mono text-xs text-neutral-400"
@@ -28,7 +28,7 @@ export function PrimingHeader({ snapshot }: PrimingHeaderProps) {
       </div>
       <p
         data-testid="priming-detail"
-        className="font-mono text-[0.7rem] text-neutral-500"
+        className="font-mono text-2xs text-neutral-500"
       >
         {snapshot.issues.length === 0 ? (
           <span>no issues yet — run bd ready</span>

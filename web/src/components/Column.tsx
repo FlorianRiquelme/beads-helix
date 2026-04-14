@@ -27,7 +27,7 @@ export function Column({ stage, issues, projectId }: ColumnProps) {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
           {label}
         </h2>
-        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-800 px-1.5 font-mono text-[0.7rem] text-neutral-300">
+        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-800 px-1.5 font-mono text-2xs text-neutral-300">
           {issues.length}
         </span>
       </div>
