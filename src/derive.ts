@@ -28,19 +28,25 @@ export function buildSnapshot(
   source: DoltSource,
   startTime: number,
 ): Snapshot {
-  // Pre-compute dependency counts
-  const depCount = new Map<string, number>();
-  const dependentCount = new Map<string, number>();
+  // Pre-compute dependency id lists (sorted for stable diffing)
+  const dependencyIds = new Map<string, string[]>();
+  const dependentIds = new Map<string, string[]>();
 
   for (const dep of deps) {
-    depCount.set(dep.issue_id, (depCount.get(dep.issue_id) ?? 0) + 1);
-    dependentCount.set(dep.depends_on_id, (dependentCount.get(dep.depends_on_id) ?? 0) + 1);
+    if (!dependencyIds.has(dep.issue_id)) dependencyIds.set(dep.issue_id, []);
+    dependencyIds.get(dep.issue_id)!.push(dep.depends_on_id);
+    if (!dependentIds.has(dep.depends_on_id)) dependentIds.set(dep.depends_on_id, []);
+    dependentIds.get(dep.depends_on_id)!.push(dep.issue_id);
   }
+  for (const list of dependencyIds.values()) list.sort();
+  for (const list of dependentIds.values()) list.sort();
 
   // Build enriched issues
   const enriched: SnapshotIssue[] = issues.map((row) => {
     const boardColumn = deriveColumn(row.status, row.maturity);
     const labels = row.labels_csv ? row.labels_csv.split(',') : [];
+    const deps = dependencyIds.get(row.id) ?? [];
+    const dependents = dependentIds.get(row.id) ?? [];
 
     return {
       id: row.id,
@@ -52,11 +58,16 @@ export function buildSnapshot(
       assignee: row.assignee ?? null,
       board_column: boardColumn,
       summary_line: `${row.id} ${row.title} [${boardColumn}]`,
-      dependency_count: depCount.get(row.id) ?? 0,
-      dependent_count: dependentCount.get(row.id) ?? 0,
+      dependency_count: deps.length,
+      dependent_count: dependents.length,
       created_at: row.created_at,
       updated_at: row.updated_at,
       closed_at: row.closed_at ?? null,
+      description: row.description ?? null,
+      notes: row.notes ?? null,
+      design: row.design ?? null,
+      dependency_ids: deps,
+      dependent_ids: dependents,
     };
   });
 
@@ -80,7 +91,7 @@ export function buildSnapshot(
   const meta: SnapshotMeta = {
     source,
     refresh_duration_ms: Date.now() - startTime,
-    schema_version: 1,
+    schema_version: 2,
   };
 
   return {

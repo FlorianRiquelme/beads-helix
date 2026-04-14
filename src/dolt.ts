@@ -4,6 +4,7 @@ import type { DoltIssueRow, DoltDepRow } from './types.js';
 
 const ISSUES_QUERY = `SELECT i.id, i.title, i.status, i.priority, i.issue_type, i.assignee,
        i.created_at, i.updated_at, i.closed_at,
+       i.description, i.notes, i.design,
        CASE
          WHEN SUM(CASE WHEN l.label = 'ready' THEN 1 ELSE 0 END) > 0 THEN 'ready'
          WHEN SUM(CASE WHEN l.label = 'refined' THEN 1 ELSE 0 END) > 0 THEN 'refined'

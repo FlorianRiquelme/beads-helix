@@ -32,6 +32,11 @@ const sampleSnapshot = {
       created_at: '2026-04-14T00:00:00.000Z',
       updated_at: '2026-04-14T00:00:00.000Z',
       closed_at: null,
+      description: null,
+      notes: null,
+      design: null,
+      dependency_ids: [],
+      dependent_ids: [],
     },
     {
       id: 'beads-helix-bbb',
@@ -48,6 +53,11 @@ const sampleSnapshot = {
       created_at: '2026-04-14T00:00:00.000Z',
       updated_at: '2026-04-14T00:00:00.000Z',
       closed_at: null,
+      description: null,
+      notes: null,
+      design: null,
+      dependency_ids: [],
+      dependent_ids: [],
     },
     {
       id: 'beads-helix-ccc',
@@ -64,12 +74,17 @@ const sampleSnapshot = {
       created_at: '2026-04-14T00:00:00.000Z',
       updated_at: '2026-04-14T00:00:00.000Z',
       closed_at: null,
+      description: null,
+      notes: null,
+      design: null,
+      dependency_ids: [],
+      dependent_ids: [],
     },
   ],
   _meta: {
     source: 'dolt_server' as const,
     refresh_duration_ms: 5,
-    schema_version: 1,
+    schema_version: 2,
   },
 };
 

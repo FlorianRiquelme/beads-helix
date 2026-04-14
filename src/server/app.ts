@@ -90,6 +90,65 @@ export function createApp(ctx: AppContext): Hono {
     }
   });
 
+  // GET /api/issue/:id?projectId= — returns a single issue sliced from the
+  // snapshot file. No extra Dolt reads; reuses the same atomic file the board
+  // already depends on.
+  app.get('/api/issue/:id', async (c) => {
+    const issueId = c.req.param('id');
+    const projectId = c.req.query('projectId') ?? ctx.config.projectId;
+    if (!projectId) {
+      return c.json(
+        { error: 'MISSING_PROJECT_ID', message: 'projectId query param required' },
+        400,
+      );
+    }
+    const path = join(ctx.config.sidecarDir, `${projectId}.snapshot.json`);
+    let raw: string;
+    try {
+      raw = await fs.readFile(path, 'utf8');
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+        return c.json(
+          {
+            error: 'SNAPSHOT_NOT_FOUND',
+            message: `Snapshot missing at ${path}. Run 'helix snapshot refresh' first.`,
+            projectId,
+          },
+          404,
+        );
+      }
+      return c.json(
+        {
+          error: 'SNAPSHOT_READ_ERROR',
+          message: (err as Error).message,
+          projectId,
+        },
+        500,
+      );
+    }
+    let parsed: { issues?: Array<{ id: string }> };
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      return c.json(
+        {
+          error: 'SNAPSHOT_CORRUPT',
+          message: `Snapshot at ${path} is not valid JSON: ${(err as Error).message}`,
+          projectId,
+        },
+        500,
+      );
+    }
+    const issue = parsed.issues?.find((i) => i.id === issueId);
+    if (!issue) {
+      return c.json(
+        { error: 'ISSUE_NOT_FOUND', projectId, id: issueId },
+        404,
+      );
+    }
+    return c.json(issue);
+  });
+
   // GET /api/registry — read current registry with lazy status healing.
   app.get('/api/registry', async (c) => {
     const registry = await readRegistry({ path: ctx.config.registryPath });

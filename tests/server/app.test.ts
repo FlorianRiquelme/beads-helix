@@ -102,6 +102,120 @@ describe('GET /api/snapshot', () => {
   });
 });
 
+describe('GET /api/issue/:id — phase 1 slice from snapshot file', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = makeTmpDir();
+  });
+
+  afterEach(() => {
+    cleanupTmpDirs();
+  });
+
+  function writeSnapshot(projectId: string) {
+    const snapshot = join(tmpDir, `${projectId}.snapshot.json`);
+    const payload = {
+      project_id: projectId,
+      generated_at: '2026-04-14T00:00:00.000Z',
+      stale_after: '2026-04-14T00:01:00.000Z',
+      columns_summary: { idea: 1, refined: 0, ready: 0, in_progress: 0, done: 0, deferred: 0 },
+      issues: [
+        {
+          id: 'p-1',
+          title: 'First',
+          status: 'open',
+          labels: ['idea'],
+          priority: 2,
+          issue_type: 'task',
+          assignee: null,
+          board_column: 'idea',
+          summary_line: 'p-1 First [idea]',
+          dependency_count: 0,
+          dependent_count: 0,
+          created_at: '2026-04-14T00:00:00.000Z',
+          updated_at: '2026-04-14T00:00:00.000Z',
+          closed_at: null,
+          description: 'desc',
+          notes: 'note',
+          design: 'design',
+          dependency_ids: [],
+          dependent_ids: [],
+        },
+      ],
+      _meta: { source: 'dolt_sql', refresh_duration_ms: 1, schema_version: 2 },
+    };
+    return fs.writeFile(snapshot, JSON.stringify(payload), 'utf8');
+  }
+
+  it('400 when projectId missing and server has no default', async () => {
+    const app = createApp({
+      config: makeConfig({ sidecarDir: tmpDir }),
+      hub: new SseHub(),
+      shutdown: () => {},
+    });
+    const res = await app.request('/api/issue/p-1');
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe('MISSING_PROJECT_ID');
+  });
+
+  it('404 SNAPSHOT_NOT_FOUND when snapshot file missing', async () => {
+    const app = createApp({
+      config: makeConfig({ sidecarDir: tmpDir, projectId: 'ghost' }),
+      hub: new SseHub(),
+      shutdown: () => {},
+    });
+    const res = await app.request('/api/issue/p-1?projectId=ghost');
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe('SNAPSHOT_NOT_FOUND');
+  });
+
+  it('404 ISSUE_NOT_FOUND when snapshot exists but issue id is unknown', async () => {
+    await writeSnapshot('ok');
+    const app = createApp({
+      config: makeConfig({ sidecarDir: tmpDir, projectId: 'ok' }),
+      hub: new SseHub(),
+      shutdown: () => {},
+    });
+    const res = await app.request('/api/issue/does-not-exist?projectId=ok');
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe('ISSUE_NOT_FOUND');
+  });
+
+  it('200 returns the matching issue payload from the snapshot slice', async () => {
+    await writeSnapshot('ok');
+    const app = createApp({
+      config: makeConfig({ sidecarDir: tmpDir, projectId: 'ok' }),
+      hub: new SseHub(),
+      shutdown: () => {},
+    });
+    const res = await app.request('/api/issue/p-1?projectId=ok');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.id).toBe('p-1');
+    expect(body.description).toBe('desc');
+    expect(body.notes).toBe('note');
+    expect(body.design).toBe('design');
+  });
+
+  it('500 SNAPSHOT_CORRUPT when the snapshot file is not JSON', async () => {
+    const snapshot = join(tmpDir, 'bad.snapshot.json');
+    await fs.writeFile(snapshot, '{ not json', 'utf8');
+    const app = createApp({
+      config: makeConfig({ sidecarDir: tmpDir, projectId: 'bad' }),
+      hub: new SseHub(),
+      shutdown: () => {},
+    });
+    const res = await app.request('/api/issue/p-1?projectId=bad');
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe('SNAPSHOT_CORRUPT');
+  });
+});
+
 describe('GET /api/registry', () => {
   let tmpDir: string;
 

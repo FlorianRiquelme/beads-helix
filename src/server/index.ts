@@ -1,9 +1,21 @@
 import { serve } from '@hono/node-server';
+import { promises as fs } from 'node:fs';
+import { basename } from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { createApp } from './app.js';
 import { SseHub } from './sse.js';
 import { startWatcher, type WatcherHandle } from './watcher.js';
+import { diffSnapshotIssues } from './snapshot-diff.js';
+import type { Snapshot } from '../types.js';
 import type { ServerConfig } from './config.js';
+
+const SNAPSHOT_SUFFIX = '.snapshot.json';
+
+function projectIdFromPath(path: string): string | null {
+  const name = basename(path);
+  if (!name.endsWith(SNAPSHOT_SUFFIX)) return null;
+  return name.slice(0, -SNAPSHOT_SUFFIX.length);
+}
 
 export interface StartServerOptions {
   config: ServerConfig;
@@ -56,11 +68,41 @@ export async function startServer(
     server.once('error', reject);
   });
 
+  // Per-project snapshot cache — enables diffing so clients can selectively
+  // invalidate queries instead of refetching every issue on every change.
+  const lastSnapshot = new Map<string, Snapshot>();
+
   const watcher: WatcherHandle = startWatcher({
     dir: opts.config.sidecarDir,
     debounceMs: opts.debounceMs ?? 200,
     onChange: (path) => {
-      void hub.broadcast({ event: 'snapshot-changed', data: { path } });
+      const projectId = projectIdFromPath(path);
+      if (!projectId) return;
+      void (async () => {
+        let next: Snapshot | null = null;
+        try {
+          const raw = await fs.readFile(path, 'utf8');
+          const parsed = JSON.parse(raw) as Partial<Snapshot>;
+          if (parsed && Array.isArray(parsed.issues)) {
+            next = parsed as Snapshot;
+          }
+        } catch {
+          next = null;
+        }
+        const prev = lastSnapshot.get(projectId) ?? null;
+        const changedIssueIds = next
+          ? diffSnapshotIssues(prev, next)
+          : [];
+        if (next) lastSnapshot.set(projectId, next);
+        await hub.broadcast({
+          event: 'snapshot-changed',
+          data: {
+            projectId,
+            generatedAt: next?.generated_at ?? new Date().toISOString(),
+            changedIssueIds,
+          },
+        });
+      })();
     },
   });
 

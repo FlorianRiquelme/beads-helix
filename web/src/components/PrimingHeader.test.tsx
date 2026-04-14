@@ -18,6 +18,11 @@ const issue = (over: Partial<SnapshotIssue>): SnapshotIssue => ({
   created_at: '2026-01-01T00:00:00.000Z',
   updated_at: '2026-01-01T00:00:00.000Z',
   closed_at: null,
+  description: null,
+  notes: null,
+  design: null,
+  dependency_ids: [],
+  dependent_ids: [],
   ...over,
 });
 

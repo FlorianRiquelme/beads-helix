@@ -145,10 +145,10 @@ describe('buildSnapshot — snapshot structure', () => {
     expect(new Date(snap.stale_after).toISOString()).toBe(snap.stale_after);
   });
 
-  it('_meta.schema_version is 1', () => {
+  it('_meta.schema_version is 2', () => {
     const startTime = Date.now();
     const snap = buildSnapshot(PROJECT, [], [], SOURCE, startTime);
-    expect(snap._meta.schema_version).toBe(1);
+    expect(snap._meta.schema_version).toBe(2);
   });
 
   it('_meta.source matches the input source (dolt_sql)', () => {
@@ -431,4 +431,81 @@ describe('buildSnapshot — field passthrough', () => {
     const snap = buildSnapshot(PROJECT, issues, [], SOURCE, startTime);
     expect(snap.issues.map((i) => i.id)).toEqual(['first', 'second', 'third']);
   });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 1 (beads-helix-8ua) — detail fields + schema_version bump
+// ---------------------------------------------------------------------------
+
+describe('buildSnapshot — detail fields for /api/issue/:id', () => {
+  it('passes description/notes/design through from the Dolt row', () => {
+    const snap = buildSingle({
+      description: '## problem',
+      notes: 'follow-up',
+      design: '```ts\nfoo()\n```',
+    });
+    const issue = snap.issues[0];
+    expect(issue.description).toBe('## problem');
+    expect(issue.notes).toBe('follow-up');
+    expect(issue.design).toBe('```ts\nfoo()\n```');
+  });
+
+  it('emits null for missing description/notes/design', () => {
+    const snap = buildSingle({ description: null, notes: null, design: null });
+    const issue = snap.issues[0];
+    expect(issue.description).toBeNull();
+    expect(issue.notes).toBeNull();
+    expect(issue.design).toBeNull();
+  });
+
+  it('populates dependency_ids with the ids this issue depends on', () => {
+    const deps = [
+      makeDep({ issue_id: 'test-1', depends_on_id: 'blocker-a' }),
+      makeDep({ issue_id: 'test-1', depends_on_id: 'blocker-b' }),
+    ];
+    const snap = buildSingle({}, deps);
+    expect(snap.issues[0].dependency_ids).toEqual(['blocker-a', 'blocker-b']);
+  });
+
+  it('returns dependency_ids sorted regardless of dep row order (stable diffing)', () => {
+    const deps = [
+      makeDep({ issue_id: 'test-1', depends_on_id: 'zeta' }),
+      makeDep({ issue_id: 'test-1', depends_on_id: 'alpha' }),
+      makeDep({ issue_id: 'test-1', depends_on_id: 'mu' }),
+    ];
+    const snap = buildSingle({}, deps);
+    expect(snap.issues[0].dependency_ids).toEqual(['alpha', 'mu', 'zeta']);
+  });
+
+  it('returns dependent_ids sorted regardless of dep row order', () => {
+    const startTime = Date.now();
+    const rows = [
+      makeRow({ id: 'target' }),
+      makeRow({ id: 'zeta' }),
+      makeRow({ id: 'alpha' }),
+    ];
+    const deps = [
+      makeDep({ issue_id: 'zeta', depends_on_id: 'target' }),
+      makeDep({ issue_id: 'alpha', depends_on_id: 'target' }),
+    ];
+    const snap = buildSnapshot(PROJECT, rows, deps, SOURCE, startTime);
+    const target = snap.issues.find((i) => i.id === 'target')!;
+    expect(target.dependent_ids).toEqual(['alpha', 'zeta']);
+  });
+
+  it('populates dependent_ids with the ids that depend on this issue', () => {
+    const startTime = Date.now();
+    const rows = [makeRow({ id: 'target' }), makeRow({ id: 'consumer' })];
+    const deps = [makeDep({ issue_id: 'consumer', depends_on_id: 'target' })];
+    const snap = buildSnapshot(PROJECT, rows, deps, SOURCE, startTime);
+    const target = snap.issues.find((i) => i.id === 'target')!;
+    expect(target.dependent_ids).toEqual(['consumer']);
+  });
+
+  it('dependency_ids and dependent_ids are empty arrays when no deps', () => {
+    const snap = buildSingle();
+    expect(snap.issues[0].dependency_ids).toEqual([]);
+    expect(snap.issues[0].dependent_ids).toEqual([]);
+  });
+
 });

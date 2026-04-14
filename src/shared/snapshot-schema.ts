@@ -26,6 +26,11 @@ export const SnapshotIssueSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   closed_at: z.string().nullable(),
+  description: z.string().nullable(),
+  notes: z.string().nullable(),
+  design: z.string().nullable(),
+  dependency_ids: z.array(z.string()),
+  dependent_ids: z.array(z.string()),
 });
 export type SnapshotIssue = z.infer<typeof SnapshotIssueSchema>;
 
@@ -44,7 +49,7 @@ export type ColumnsSummary = z.infer<typeof ColumnsSummarySchema>;
 export const SnapshotMetaSchema = z.object({
   source: z.enum(['dolt_server', 'dolt_sql']),
   refresh_duration_ms: z.number(),
-  schema_version: z.number(),
+  schema_version: z.number().int().min(2),
 });
 export type SnapshotMeta = z.infer<typeof SnapshotMetaSchema>;
 

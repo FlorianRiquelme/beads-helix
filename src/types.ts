@@ -13,6 +13,11 @@ export interface SnapshotIssue {
   created_at: string;
   updated_at: string;
   closed_at: string | null;
+  description: string | null;
+  notes: string | null;
+  design: string | null;
+  dependency_ids: string[];
+  dependent_ids: string[];
 }
 
 export interface ColumnsSummary {
@@ -56,6 +61,9 @@ export interface DoltIssueRow {
   closed_at: string | null;
   maturity: string | null;
   labels_csv: string | null;
+  description: string | null;
+  notes: string | null;
+  design: string | null;
 }
 
 export interface DoltDepRow {
