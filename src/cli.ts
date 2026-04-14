@@ -1,9 +1,21 @@
 #!/usr/bin/env node
 
-import { pathToFileURL } from 'node:url';
+import { existsSync } from 'node:fs';
+import { dirname, resolve as pathResolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolveSnapshotPath, refresh } from './snapshot.js';
 import { runView } from './commands/view.js';
 import { runServe } from './commands/serve.js';
+
+/**
+ * Locate the static UI bundle shipped alongside the compiled CLI.
+ * Returns undefined if no bundle is present (e.g. dev scripts without `npm run build:ui`).
+ */
+function defaultUiDir(): string | undefined {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidate = pathResolve(here, 'ui');
+  return existsSync(candidate) ? candidate : undefined;
+}
 
 function usage(): void {
   process.stderr.write(`Usage:
@@ -105,8 +117,13 @@ export async function main(argv: string[]): Promise<void> {
     case 'serve': {
       // Internal entry invoked by the spawn launcher. Reads config from env,
       // writes HELIX_READY sentinel, then runs until SIGTERM.
+      const env = { ...process.env };
+      if (!env.HELIX_UI_DIR) {
+        const ui = defaultUiDir();
+        if (ui) env.HELIX_UI_DIR = ui;
+      }
       await runServe({
-        env: process.env,
+        env,
         installSignalHandlers: true,
       });
       // runServe installs signal handlers that call process.exit on SIGTERM.

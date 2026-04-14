@@ -8,6 +8,11 @@ import { resolve } from 'node:path';
 export default defineConfig({
   root: resolve(__dirname, 'web'),
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@shared': resolve(__dirname, 'src/shared'),
+    },
+  },
   build: {
     outDir: resolve(__dirname, 'dist/ui'),
     emptyOutDir: true,

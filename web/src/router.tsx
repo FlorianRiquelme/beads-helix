@@ -3,7 +3,9 @@ import {
   createRoute,
   createRouter,
   Outlet,
+  lazyRouteComponent,
 } from '@tanstack/react-router';
+import { z } from 'zod';
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
@@ -24,14 +26,23 @@ const indexRoute = createRoute({
   },
 });
 
-// Project route is filled in during phase 7 (routing).
-// Placeholder kept so the router compiles during earlier phases.
-const projectRoute = createRoute({
+// Search-param schema for /p/$projectId. Lives at module scope so the
+// ProjectPage component can `route.useSearch()` with the parsed shape.
+const ProjectSearchSchema = z.object({
+  priority: z
+    .union([
+      z.literal('all'),
+      z.coerce.number().int().min(0).max(4),
+    ])
+    .optional(),
+  q: z.string().optional(),
+});
+
+export const projectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/p/$projectId',
-  component: function ProjectPlaceholder() {
-    return <div className="p-8 text-neutral-500">project route — pending</div>;
-  },
+  validateSearch: (raw) => ProjectSearchSchema.parse(raw),
+  component: lazyRouteComponent(() => import('./pages/ProjectPage'), 'ProjectPage'),
 });
 
 const routeTree = rootRoute.addChildren([indexRoute, projectRoute]);

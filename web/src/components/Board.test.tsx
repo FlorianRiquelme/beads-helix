@@ -160,10 +160,9 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    expect(await screen.findByText('Idea card')).toBeInTheDocument();
-    expect(screen.getByText('Refined card')).toBeInTheDocument();
-    expect(screen.getByText('Ready card')).toBeInTheDocument();
-    expect(screen.getAllByRole('region', { hidden: true }).length).toBeGreaterThanOrEqual(0);
+    expect(await screen.findByRole('button', { name: /Idea card/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Refined card/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ready card/i })).toBeInTheDocument();
   });
 
   it('renders SNAPSHOT_NOT_FOUND empty state with helpful command', async () => {
@@ -201,7 +200,7 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByText('Idea card');
+    await screen.findByRole('button', { name: /Idea card/i });
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     expect(MockEventSource.instances.length).toBe(1);
@@ -222,7 +221,7 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByText('Idea card');
+    await screen.findByRole('button', { name: /Idea card/i });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     fireEvent.keyDown(window, { key: 'r' });
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
@@ -236,7 +235,7 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByText('Idea card');
+    await screen.findByRole('button', { name: /Idea card/i });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const input = screen.getByPlaceholderText(/search/i);
     input.focus();
@@ -254,7 +253,7 @@ describe('<Board />', () => {
     const { unmount } = render(
       withProviders(client, <Board projectId="beads-helix" />),
     );
-    await screen.findByText('Idea card');
+    await screen.findByRole('button', { name: /Idea card/i });
     unmount();
     expect(MockEventSource.instances[0].closed).toBe(true);
   });
@@ -267,10 +266,10 @@ describe('<Board />', () => {
     });
     const client = makeQueryClient();
     render(withProviders(client, <Board projectId="beads-helix" />));
-    await screen.findByText('Idea card');
+    await screen.findByRole('button', { name: /Idea card/i });
     fireEvent.change(screen.getByLabelText(/priority/i), { target: { value: '0' } });
-    expect(screen.queryByText('Idea card')).not.toBeInTheDocument();
-    expect(screen.getByText('Refined card')).toBeInTheDocument();
-    expect(screen.queryByText('Ready card')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Idea card/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Refined card/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Ready card/i })).not.toBeInTheDocument();
   });
 });

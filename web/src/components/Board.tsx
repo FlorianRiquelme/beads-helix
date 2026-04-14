@@ -9,15 +9,32 @@ import {
 import { fetchSnapshot, SnapshotError } from '../lib/snapshot';
 import { Column } from './Column';
 import { FilterToolbar, type PriorityFilter } from './FilterToolbar';
+import { PrimingHeader } from './PrimingHeader';
 
 export interface BoardProps {
   projectId: string;
+  /** Controlled priority. When omitted, Board manages state internally. */
+  priority?: PriorityFilter;
+  /** Controlled search query. When omitted, Board manages state internally. */
+  query?: string;
+  onPriorityChange?: (next: PriorityFilter) => void;
+  onQueryChange?: (next: string) => void;
 }
 
-export function Board({ projectId }: BoardProps) {
+export function Board({
+  projectId,
+  priority: controlledPriority,
+  query: controlledQuery,
+  onPriorityChange: controlledOnPriority,
+  onQueryChange: controlledOnQuery,
+}: BoardProps) {
   const queryClient = useQueryClient();
-  const [priority, setPriority] = useState<PriorityFilter>('all');
-  const [query, setQuery] = useState('');
+  const [localPriority, setLocalPriority] = useState<PriorityFilter>('all');
+  const [localQuery, setLocalQuery] = useState('');
+  const priority = controlledPriority ?? localPriority;
+  const query = controlledQuery ?? localQuery;
+  const setPriority = controlledOnPriority ?? setLocalPriority;
+  const setQuery = controlledOnQuery ?? setLocalQuery;
 
   const snapshotQuery = useQuery({
     queryKey: ['snapshot', projectId],
@@ -67,6 +84,7 @@ export function Board({ projectId }: BoardProps) {
 
   return (
     <div className="flex h-full min-h-screen flex-col gap-3 bg-neutral-950 p-4 text-neutral-100">
+      {snapshotQuery.data && <PrimingHeader snapshot={snapshotQuery.data} />}
       <FilterToolbar
         priority={priority}
         query={query}
