@@ -22,6 +22,9 @@
     "test:mutate": "stryker run"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.14",
+    "chokidar": "^5.0.0",
+    "hono": "^4.12.12",
     "mysql2": "^3.11.0",
     "proper-lockfile": "^4.1.2",
     "zod": "^4.3.6"
