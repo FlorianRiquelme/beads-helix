@@ -232,7 +232,19 @@ async function registerProject(
 function defaultInstallSigint(onSigint: () => void): () => void {
   const handler = (): void => onSigint();
   process.on('SIGINT', handler);
-  return () => process.off('SIGINT', handler);
+  process.on('SIGTERM', handler);
+  // Synchronous best-effort: if the parent exits normally without going
+  // through shutdownChild (e.g. uncaught exception, crash), don't leave
+  // the server orphaned on its port. This DOES NOT defend against
+  // SIGKILL of the parent — nothing in userland does — but it covers
+  // the common accidental-exit paths.
+  const exitHandler = (): void => onSigint();
+  process.on('exit', exitHandler);
+  return () => {
+    process.off('SIGINT', handler);
+    process.off('SIGTERM', handler);
+    process.off('exit', exitHandler);
+  };
 }
 
 function defaultWaitForExit(child: ChildProcess): Promise<void> {

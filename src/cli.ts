@@ -75,7 +75,12 @@ export async function main(argv: string[]): Promise<void> {
     }
 
     case 'view': {
-      const result = await runView({ cwd: flags.repo, forceDeck: false });
+      const result = await runView({
+        cwd: flags.repo,
+        forceDeck: false,
+        preferredPort: preferredPortFromEnv(),
+        deps: viewDepsFromEnv(),
+      });
       process.stdout.write(
         `helix ${result.action} — ${result.mode} mode @ ${result.url}\n`,
       );
@@ -84,7 +89,12 @@ export async function main(argv: string[]): Promise<void> {
     }
 
     case 'deck': {
-      const result = await runView({ cwd: flags.repo, forceDeck: true });
+      const result = await runView({
+        cwd: flags.repo,
+        forceDeck: true,
+        preferredPort: preferredPortFromEnv(),
+        deps: viewDepsFromEnv(),
+      });
       process.stdout.write(
         `helix ${result.action} — deck @ ${result.url}\n`,
       );
@@ -111,6 +121,41 @@ export async function main(argv: string[]): Promise<void> {
       process.stderr.write(`Unknown subcommand: ${subcommand}\n`);
       usage();
   }
+}
+
+/**
+ * Test-mode escape hatches wired via env vars. Kept narrow and CLI-only so
+ * the view/serve unit tests remain free of process env coupling.
+ *
+ *  HELIX_SKIP_OPEN=1  — replace openUrl with a no-op (integration tests)
+ *  HELIX_REGISTRY_PATH, HELIX_SIDECAR_DIR — override default paths
+ *  HELIX_PREFERRED_PORT — integer, override the 7373 default (tests use 0)
+ */
+function preferredPortFromEnv(): number | undefined {
+  const raw = process.env.HELIX_PREFERRED_PORT;
+  if (!raw) return undefined;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isInteger(n) || n < 0) return undefined;
+  return n;
+}
+
+function viewDepsFromEnv(): Parameters<typeof runView>[0] extends infer P
+  ? P extends { deps?: infer D }
+    ? D
+    : never
+  : never {
+  const deps: NonNullable<Parameters<typeof runView>[0]>['deps'] = {};
+  if (process.env.HELIX_SKIP_OPEN === '1') {
+    deps.open = async () => {};
+  }
+  const registryOverride = process.env.HELIX_REGISTRY_PATH;
+  const sidecarOverride = process.env.HELIX_SIDECAR_DIR;
+  if (registryOverride || sidecarOverride) {
+    deps.paths = {};
+    if (registryOverride) deps.paths.registry = registryOverride;
+    if (sidecarOverride) deps.paths.sidecar = sidecarOverride;
+  }
+  return deps;
 }
 
 // Only run main() when this module is the entry point, not when imported by tests
