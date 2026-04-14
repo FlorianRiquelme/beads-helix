@@ -1,5 +1,6 @@
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import { Board } from '../components/Board';
+import { CommandPalette } from '../components/CommandPalette';
 import type { PriorityFilter } from '../components/FilterToolbar';
 import { projectRoute } from '../router';
 
@@ -33,6 +34,7 @@ export function ProjectPage() {
         onPriorityChange={setPriority}
         onQueryChange={setQuery}
       />
+      <CommandPalette projectId={projectId} />
       <Outlet />
     </>
   );

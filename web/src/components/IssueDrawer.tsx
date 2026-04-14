@@ -10,6 +10,7 @@ import type { Snapshot } from '@shared/snapshot-schema';
 import { fetchIssue, IssueError } from '../lib/issue';
 import { copyToClipboard, priorityChipClass, priorityLabel } from '../lib/board';
 import { buildDependencyWeather, type DependencyRail, type DependencyWeather } from '../lib/relationships';
+import { findCardElement, morphAndRun } from '../lib/view-transition';
 
 export interface IssueDrawerProps {
   projectId: string;
@@ -40,12 +41,18 @@ export function IssueDrawer({ projectId, issueId, open, onClose, filteredIssueId
     return w;
   }, [issueQuery.data, queryClient, projectId]);
 
+  const closeWithMorph = (): void => {
+    morphAndRun(findCardElement(issueId), () => {
+      onClose();
+    });
+  };
+
   return (
     <Dialog.Root
       open={open}
       modal={false}
       onOpenChange={(next) => {
-        if (!next) onClose();
+        if (!next) closeWithMorph();
       }}
     >
       <Dialog.Portal>
@@ -53,20 +60,23 @@ export function IssueDrawer({ projectId, issueId, open, onClose, filteredIssueId
           aria-describedby={undefined}
           onInteractOutside={(e) => {
             e.preventDefault();
-            onClose();
+            closeWithMorph();
           }}
+          style={{ viewTransitionName: 'issue-morph' }}
           className="fixed right-0 top-0 z-40 flex h-full w-full max-w-xl flex-col border-l border-neutral-800 bg-neutral-950 text-neutral-100 shadow-2xl focus:outline-none md:w-[640px]"
         >
           <header className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
             <Dialog.Title className="truncate font-mono text-xs text-neutral-400">
               {issueId}
             </Dialog.Title>
-            <Dialog.Close
+            <button
+              type="button"
               aria-label="Close"
+              onClick={closeWithMorph}
               className="rounded p-1 text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
             >
               <X size={16} />
-            </Dialog.Close>
+            </button>
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto p-4">
             {snapshotIssueIds && !snapshotIssueIds.includes(issueId) && (

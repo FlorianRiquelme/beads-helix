@@ -1,5 +1,5 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useRef, type KeyboardEvent, type MouseEvent } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import type { SnapshotIssue } from '@shared/snapshot-schema';
 import {
@@ -9,6 +9,7 @@ import {
   priorityLabel,
   shortId,
 } from '../lib/board';
+import { morphAndRun } from '../lib/view-transition';
 
 export type HighlightTint = 'red' | 'blue' | 'gold';
 
@@ -27,6 +28,8 @@ const TINT_RING: Record<HighlightTint, string> = {
 
 export function Card({ issue, projectId, ghosted, highlightTint }: CardProps) {
   const sid = shortId(issue.id);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const navigate = useNavigate();
 
   const copy = async (): Promise<void> => {
     try {
@@ -43,20 +46,47 @@ export function Card({ issue, projectId, ghosted, highlightTint }: CardProps) {
     void copy();
   };
 
+  const handleClick = (e: MouseEvent<HTMLAnchorElement>): void => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    morphAndRun(linkRef.current, () => {
+      void navigate({
+        to: '/p/$projectId/i/$issueId',
+        params: { projectId, issueId: issue.id },
+        search: (prev) => prev,
+      });
+    });
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>): void => {
     if (e.key === 'c' || e.key === 'C') {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       e.preventDefault();
       void copy();
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      e.preventDefault();
+      morphAndRun(linkRef.current, () => {
+        void navigate({
+          to: '/p/$projectId/i/$issueId',
+          params: { projectId, issueId: issue.id },
+          search: (prev) => prev,
+        });
+      });
     }
   };
 
   return (
     <Link
+      ref={linkRef}
       to="/p/$projectId/i/$issueId"
       params={{ projectId, issueId: issue.id }}
       search={(prev) => prev}
+      data-issue-id={issue.id}
       aria-label={`Open issue ${sid} — ${issue.title}. Press c to copy ${issue.id}.`}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={`group block cursor-pointer rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left no-underline transition hover:border-neutral-700 hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60${ghosted ? ' opacity-15' : ''}${highlightTint ? ` ${TINT_RING[highlightTint]}` : ''}`}
     >

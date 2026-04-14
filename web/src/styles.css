@@ -13,3 +13,23 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+::view-transition-old(issue-morph),
+::view-transition-new(issue-morph) {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(issue-morph) {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(issue-morph),
+  ::view-transition-new(issue-morph),
+  ::view-transition-group(issue-morph) {
+    animation-duration: 0ms !important;
+  }
+}
