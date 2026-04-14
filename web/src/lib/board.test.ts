@@ -202,4 +202,13 @@ describe('findLastTouched', () => {
   it('returns null for an empty array', () => {
     expect(findLastTouched([])).toBeNull();
   });
+  it('returns the FIRST occurrence on a tie (stable)', () => {
+    // Locks the strict-greater-than comparison: a >= b would let later equal
+    // entries win, which would make the priming header flicker between
+    // identically-touched tickets on every refresh.
+    const ts = '2026-04-12T00:00:00.000Z';
+    const a = make({ id: 'a', updated_at: ts });
+    const b = make({ id: 'b', updated_at: ts });
+    expect(findLastTouched([a, b])).toBe(a);
+  });
 });

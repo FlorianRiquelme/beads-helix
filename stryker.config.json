@@ -4,7 +4,8 @@
     "src/**/*.ts",
     "!src/index.ts",
     "!src/types.ts",
-    "!src/cli.ts"
+    "!src/cli.ts",
+    "web/src/lib/**/*.ts"
   ],
   "testRunner": "vitest",
   "checkers": ["typescript"],

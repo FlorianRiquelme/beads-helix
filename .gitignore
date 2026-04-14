@@ -16,6 +16,8 @@ dist/
 coverage/
 reports/
 .stryker-tmp/
+test-results/
+playwright-report/
 
 # Track .claude/ for this project (it IS the plugin)
 !.claude/

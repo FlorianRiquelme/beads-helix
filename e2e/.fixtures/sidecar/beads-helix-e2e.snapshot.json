@@ -1,0 +1,100 @@
+{
+  "project_id": "beads-helix-e2e",
+  "generated_at": "2026-04-14T00:00:00.000Z",
+  "stale_after": "2026-04-14T00:01:00.000Z",
+  "columns_summary": {
+    "idea": 2,
+    "refined": 1,
+    "ready": 1,
+    "in_progress": 1,
+    "done": 0,
+    "deferred": 0
+  },
+  "issues": [
+    {
+      "id": "beads-helix-e2e-aaa",
+      "title": "Spike: investigate kanban density",
+      "status": "open",
+      "labels": ["idea"],
+      "priority": 2,
+      "issue_type": "task",
+      "assignee": null,
+      "board_column": "idea",
+      "summary_line": "",
+      "dependency_count": 0,
+      "dependent_count": 1,
+      "created_at": "2026-04-10T00:00:00.000Z",
+      "updated_at": "2026-04-13T00:00:00.000Z",
+      "closed_at": null
+    },
+    {
+      "id": "beads-helix-e2e-bbb",
+      "title": "Promotion ceremony for refined stage",
+      "status": "open",
+      "labels": ["idea"],
+      "priority": 0,
+      "issue_type": "task",
+      "assignee": null,
+      "board_column": "idea",
+      "summary_line": "",
+      "dependency_count": 0,
+      "dependent_count": 0,
+      "created_at": "2026-04-10T00:00:00.000Z",
+      "updated_at": "2026-04-12T00:00:00.000Z",
+      "closed_at": null
+    },
+    {
+      "id": "beads-helix-e2e-ccc",
+      "title": "Card click copies bd id",
+      "status": "open",
+      "labels": ["refined"],
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": null,
+      "board_column": "refined",
+      "summary_line": "",
+      "dependency_count": 1,
+      "dependent_count": 0,
+      "created_at": "2026-04-10T00:00:00.000Z",
+      "updated_at": "2026-04-11T00:00:00.000Z",
+      "closed_at": null
+    },
+    {
+      "id": "beads-helix-e2e-ddd",
+      "title": "Server SSE fans out updates",
+      "status": "open",
+      "labels": ["ready"],
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": null,
+      "board_column": "ready",
+      "summary_line": "",
+      "dependency_count": 0,
+      "dependent_count": 0,
+      "created_at": "2026-04-10T00:00:00.000Z",
+      "updated_at": "2026-04-14T00:00:00.000Z",
+      "closed_at": null
+    },
+    {
+      "id": "beads-helix-e2e-eee",
+      "title": "Refactor snapshot writer",
+      "status": "in_progress",
+      "labels": ["ready"],
+      "priority": 0,
+      "issue_type": "task",
+      "assignee": null,
+      "board_column": "in_progress",
+      "summary_line": "",
+      "dependency_count": 0,
+      "dependent_count": 2,
+      "created_at": "2026-04-10T00:00:00.000Z",
+      "updated_at": "2026-04-14T00:00:00.000Z",
+      "closed_at": null
+    }
+  ],
+  "_meta": {
+    "source": "dolt_server",
+    "refresh_duration_ms": 5,
+    "schema_version": 1
+  }
+}
