@@ -45,6 +45,15 @@ export const projectRoute = createRoute({
   component: lazyRouteComponent(() => import('./pages/ProjectPage'), 'ProjectPage'),
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, projectRoute]);
+export const issueRoute = createRoute({
+  getParentRoute: () => projectRoute,
+  path: 'i/$issueId',
+  component: lazyRouteComponent(() => import('./pages/IssueRoute'), 'IssueRoute'),
+});
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  projectRoute.addChildren([issueRoute]),
+]);
 
 export const router = createRouter({ routeTree });

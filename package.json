@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@tanstack/react-query": "^5.62.0",
     "@tanstack/react-router": "^1.114.0",
     "chokidar": "^5.0.0",
@@ -40,10 +41,10 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.0",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/typescript-checker": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
-    "@playwright/test": "^1.58.0",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.1.0",

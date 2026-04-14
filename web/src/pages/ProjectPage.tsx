@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Outlet, useNavigate } from '@tanstack/react-router';
 import { Board } from '../components/Board';
 import type { PriorityFilter } from '../components/FilterToolbar';
 import { projectRoute } from '../router';
@@ -25,12 +25,15 @@ export function ProjectPage() {
     search.priority === undefined ? 'all' : (search.priority as PriorityFilter);
 
   return (
-    <Board
-      projectId={projectId}
-      priority={priority}
-      query={search.q ?? ''}
-      onPriorityChange={setPriority}
-      onQueryChange={setQuery}
-    />
+    <>
+      <Board
+        projectId={projectId}
+        priority={priority}
+        query={search.q ?? ''}
+        onPriorityChange={setPriority}
+        onQueryChange={setQuery}
+      />
+      <Outlet />
+    </>
   );
 }
