@@ -54,6 +54,17 @@ Research and design tickets produce findings that downstream tickets need. Knowl
 
 This is **push-at-close + full-picture-pull-at-start**. Backward for context, forward for purpose.
 
+## UI Development
+
+**`npm run dev`** — the intended loop for frontend work. Runs two processes under `concurrently`:
+
+- **`dev:api`** (`tsx watch scripts/dev-server.ts`) — boots the same `startServer()` used in production on `:7373`, pointing at this repo's beads sidecar. Auto-refreshes the snapshot once on startup, upserts the project into the registry, fires SSE on `.beads/` snapshot changes.
+- **`dev:ui`** (`vite`) — Vite with HMR on `:5173`, proxying `/api` and `/_helix-id` to `:7373`.
+
+Open `http://localhost:5173/p/$(cat .beads/metadata.json | jq -r .project_id)` to see the flight deck with live data.
+
+`helix view` remains the production/manual path (no HMR, serves built `dist/ui/`). Reach for that only when testing the full built artifact.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 

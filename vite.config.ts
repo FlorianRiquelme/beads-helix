@@ -21,8 +21,15 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:7373',
-      '/_helix-id': 'http://localhost:7373',
+      // SSE needs changeOrigin + no buffering; the wildcard ws:false default is fine.
+      '/api': {
+        target: 'http://localhost:7373',
+        changeOrigin: true,
+      },
+      '/_helix-id': {
+        target: 'http://localhost:7373',
+        changeOrigin: true,
+      },
     },
   },
 });
