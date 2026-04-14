@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 export interface ServerConfig {
   /** Absolute path to `~/.helix/projects.json` (override for tests). */
   registryPath: string;
-  /** Absolute path to `/tmp/beads-sidecar/` (override for tests). */
+  /** Absolute path to the beads-sidecar directory under `os.tmpdir()` (override for tests). */
   sidecarDir: string;
   /** Token required for POST /_shutdown. */
   shutdownToken: string;

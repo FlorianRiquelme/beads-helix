@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, basename, dirname } from 'node:path';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
@@ -235,25 +236,25 @@ describe('getLastTouchedPath', () => {
 });
 
 describe('snapshotPath', () => {
-  it('returns the snapshot JSON path under /tmp/beads-sidecar', () => {
+  it('returns the snapshot JSON path under the OS tmp sidecar dir', () => {
     const result = snapshotPath('my-proj');
-    expect(result).toBe('/tmp/beads-sidecar/my-proj.snapshot.json');
+    expect(result).toBe(join(tmpdir(), 'beads-sidecar', 'my-proj.snapshot.json'));
   });
 
   it('incorporates the full projectId in the filename', () => {
     const result = snapshotPath('alpha_123-XYZ');
-    expect(result).toBe('/tmp/beads-sidecar/alpha_123-XYZ.snapshot.json');
+    expect(result).toBe(join(tmpdir(), 'beads-sidecar', 'alpha_123-XYZ.snapshot.json'));
   });
 });
 
 describe('lockPath', () => {
-  it('returns the refresh lock path under /tmp/beads-sidecar', () => {
+  it('returns the refresh lock path under the OS tmp sidecar dir', () => {
     const result = lockPath('my-proj');
-    expect(result).toBe('/tmp/beads-sidecar/my-proj.refresh.lock');
+    expect(result).toBe(join(tmpdir(), 'beads-sidecar', 'my-proj.refresh.lock'));
   });
 
   it('incorporates the full projectId in the filename', () => {
     const result = lockPath('beta_456-ABC');
-    expect(result).toBe('/tmp/beads-sidecar/beta_456-ABC.refresh.lock');
+    expect(result).toBe(join(tmpdir(), 'beads-sidecar', 'beta_456-ABC.refresh.lock'));
   });
 });

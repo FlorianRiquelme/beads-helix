@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { sidecarDir } from './shared/paths.js';
 
 export interface BeadsRepo {
   root: string;
@@ -53,9 +54,9 @@ export function getLastTouchedPath(beadsDir: string): string {
 }
 
 export function snapshotPath(projectId: string): string {
-  return join('/tmp', 'beads-sidecar', `${projectId}.snapshot.json`);
+  return join(sidecarDir(), `${projectId}.snapshot.json`);
 }
 
 export function lockPath(projectId: string): string {
-  return join('/tmp', 'beads-sidecar', `${projectId}.refresh.lock`);
+  return join(sidecarDir(), `${projectId}.refresh.lock`);
 }

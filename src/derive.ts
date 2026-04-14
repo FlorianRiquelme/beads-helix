@@ -56,7 +56,7 @@ export function buildSnapshot(
       dependent_count: dependentCount.get(row.id) ?? 0,
       created_at: row.created_at,
       updated_at: row.updated_at,
-      closed_at: row.closed_at,
+      closed_at: row.closed_at ?? null,
     };
   });
 
