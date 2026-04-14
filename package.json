@@ -22,13 +22,16 @@
     "test:mutate": "stryker run"
   },
   "dependencies": {
-    "mysql2": "^3.11.0"
+    "mysql2": "^3.11.0",
+    "proper-lockfile": "^4.1.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/typescript-checker": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^22.0.0",
+    "@types/proper-lockfile": "^4.1.4",
     "@vitest/coverage-v8": "^4.1.4",
     "typescript": "^5.7.0",
     "vitest": "^4.1.4"
