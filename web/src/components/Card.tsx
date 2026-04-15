@@ -1,5 +1,6 @@
 import { useRef, type KeyboardEvent, type MouseEvent } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import type { SnapshotIssue } from '@shared/snapshot-schema';
 import {
@@ -88,7 +89,7 @@ export function Card({ issue, projectId, ghosted, highlightTint }: CardProps) {
       aria-label={`Open issue ${sid} — ${issue.title}. Press c to copy ${issue.id}.`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`group block cursor-pointer rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left no-underline transition hover:border-neutral-700 hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60${ghosted ? ' opacity-15' : ''}${highlightTint ? ` ${TINT_RING[highlightTint]}` : ''}`}
+      className={`group block cursor-pointer rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left no-underline transition-colors duration-150 hover:border-neutral-700 hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60${ghosted ? ' opacity-15' : ''}${highlightTint ? ` ${TINT_RING[highlightTint]}` : ''}`}
     >
       <p className="line-clamp-2 text-sm font-medium leading-snug text-neutral-100">
         {issue.title}
@@ -105,9 +106,14 @@ export function Card({ issue, projectId, ghosted, highlightTint }: CardProps) {
             type="button"
             aria-label={`Copy id ${issue.id}`}
             onClick={handleShortIdClick}
-            className="rounded px-1 font-mono text-xs text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
+            className="inline-flex items-center gap-1 rounded px-1 font-mono text-xs text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
           >
-            {sid}
+            <span>{sid}</span>
+            <Copy
+              size={10}
+              aria-hidden="true"
+              className="opacity-0 transition-opacity duration-150 group-hover:opacity-60 group-focus-within:opacity-60"
+            />
           </button>
         </div>
         <span className="font-mono text-2xs text-neutral-500">

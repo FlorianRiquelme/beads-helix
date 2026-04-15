@@ -84,7 +84,9 @@ export function Board({
 
   return (
     <div className="flex h-full min-h-screen flex-col gap-3 bg-neutral-950 p-4 text-neutral-100">
-      {snapshotQuery.data && <PrimingHeader snapshot={snapshotQuery.data} />}
+      {snapshotQuery.data && (
+        <PrimingHeader snapshot={snapshotQuery.data} projectId={projectId} />
+      )}
       <FilterToolbar
         priority={priority}
         query={query}

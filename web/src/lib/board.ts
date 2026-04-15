@@ -89,6 +89,12 @@ export function findInProgress(
   return issues.find((i) => i.status === 'in_progress') ?? null;
 }
 
+export function countInProgress(issues: readonly SnapshotIssue[]): number {
+  let n = 0;
+  for (const i of issues) if (i.status === 'in_progress') n += 1;
+  return n;
+}
+
 export function findLastTouched(
   issues: readonly SnapshotIssue[],
 ): SnapshotIssue | null {

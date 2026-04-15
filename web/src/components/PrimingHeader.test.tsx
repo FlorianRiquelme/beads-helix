@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { Snapshot, SnapshotIssue } from '@shared/snapshot-schema';
 import { PrimingHeader } from './PrimingHeader';
+import { withRouter } from '../test-utils';
+
+const renderHeader = (snap: Snapshot) =>
+  render(withRouter(<PrimingHeader snapshot={snap} projectId={snap.project_id} />));
 
 const issue = (over: Partial<SnapshotIssue>): SnapshotIssue => ({
   id: 'beads-helix-x',
@@ -44,20 +48,20 @@ const baseSnapshot = (over: Partial<Snapshot> = {}): Snapshot => ({
 });
 
 describe('<PrimingHeader />', () => {
-  it('renders the project name', () => {
-    render(<PrimingHeader snapshot={baseSnapshot()} />);
-    expect(screen.getByText('beads-helix')).toBeInTheDocument();
+  it('renders the project name', async () => {
+    renderHeader(baseSnapshot());
+    expect(await screen.findByText('beads-helix')).toBeInTheDocument();
   });
 
-  it('renders the per-stage counts on line 1', () => {
-    render(<PrimingHeader snapshot={baseSnapshot()} />);
-    const counts = screen.getByTestId('priming-counts');
+  it('renders the per-stage counts on line 1', async () => {
+    renderHeader(baseSnapshot());
+    const counts = await screen.findByTestId('priming-counts');
     expect(counts).toHaveTextContent('5 idea');
     expect(counts).toHaveTextContent('3 refined');
     expect(counts).toHaveTextContent('2 ready');
   });
 
-  it('renders the last-touched ticket id and title on line 2', () => {
+  it('renders the last-touched ticket id and title on line 2', async () => {
     const snap = baseSnapshot({
       issues: [
         issue({
@@ -72,14 +76,14 @@ describe('<PrimingHeader />', () => {
         }),
       ],
     });
-    render(<PrimingHeader snapshot={snap} />);
-    const detail = screen.getByTestId('priming-detail');
+    renderHeader(snap);
+    const detail = await screen.findByTestId('priming-detail');
     expect(detail).toHaveTextContent(/last touched/i);
     expect(detail).toHaveTextContent('fresh');
     expect(detail).toHaveTextContent(/fresher/);
   });
 
-  it('renders the in_progress claim when one exists', () => {
+  it('renders the in_progress claim when one exists', async () => {
     const snap = baseSnapshot({
       issues: [
         issue({
@@ -90,24 +94,68 @@ describe('<PrimingHeader />', () => {
         }),
       ],
     });
-    render(<PrimingHeader snapshot={snap} />);
-    const detail = screen.getByTestId('priming-detail');
+    renderHeader(snap);
+    const detail = await screen.findByTestId('priming-detail');
     expect(detail).toHaveTextContent(/in progress/i);
     expect(detail).toHaveTextContent('now');
   });
 
-  it('shows an idle marker when there are issues but none in progress', () => {
+  it('surfaces a "+N" badge when multiple issues are in progress', async () => {
+    const snap = baseSnapshot({
+      issues: [
+        issue({
+          id: 'beads-helix-now',
+          title: 'primary in-flight',
+          status: 'in_progress',
+          board_column: 'in_progress',
+        }),
+        issue({
+          id: 'beads-helix-two',
+          title: 'secondary in-flight',
+          status: 'in_progress',
+          board_column: 'in_progress',
+        }),
+        issue({
+          id: 'beads-helix-three',
+          title: 'tertiary in-flight',
+          status: 'in_progress',
+          board_column: 'in_progress',
+        }),
+      ],
+    });
+    renderHeader(snap);
+    const badge = await screen.findByLabelText(/2 more in progress/i);
+    expect(badge).toHaveTextContent('+2');
+  });
+
+  it('does not render a "+N" badge when only one issue is in progress', async () => {
+    const snap = baseSnapshot({
+      issues: [
+        issue({
+          id: 'beads-helix-solo',
+          title: 'solo',
+          status: 'in_progress',
+          board_column: 'in_progress',
+        }),
+      ],
+    });
+    renderHeader(snap);
+    await screen.findByTestId('priming-detail');
+    expect(screen.queryByLabelText(/more in progress/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an idle marker when there are issues but none in progress', async () => {
     const snap = baseSnapshot({
       issues: [issue({ id: 'beads-helix-only', title: 'one', status: 'open' })],
     });
-    render(<PrimingHeader snapshot={snap} />);
-    const detail = screen.getByTestId('priming-detail');
+    renderHeader(snap);
+    const detail = await screen.findByTestId('priming-detail');
     expect(detail).toHaveTextContent(/idle/i);
   });
 
-  it('shows an empty marker when no issues touched yet', () => {
-    render(<PrimingHeader snapshot={baseSnapshot({ issues: [] })} />);
-    const detail = screen.getByTestId('priming-detail');
+  it('shows an empty marker when no issues touched yet', async () => {
+    renderHeader(baseSnapshot({ issues: [] }));
+    const detail = await screen.findByTestId('priming-detail');
     expect(detail).toHaveTextContent(/no issues yet/i);
   });
 });

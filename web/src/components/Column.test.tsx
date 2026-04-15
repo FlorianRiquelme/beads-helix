@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import type { SnapshotIssue } from '@shared/snapshot-schema';
 import { Column } from './Column';
 import { withRouter } from '../test-utils';
@@ -35,17 +35,6 @@ describe('<Column />', () => {
   it('renders the stage name as a header', async () => {
     renderColumn('idea', []);
     expect(await screen.findByRole('heading', { name: /idea/i })).toBeInTheDocument();
-  });
-
-  it('renders the issue count pill', async () => {
-    const issues = [
-      make({ id: 'a', title: 'A' }),
-      make({ id: 'b', title: 'B' }),
-    ];
-    renderColumn('ready', issues);
-    const header = await screen.findByRole('heading', { name: /ready/i });
-    const headerEl = header.parentElement!;
-    expect(within(headerEl).getByText('2')).toBeInTheDocument();
   });
 
   it('renders an empty-state hint when no issues', async () => {

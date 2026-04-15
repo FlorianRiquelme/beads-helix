@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { SnapshotIssue } from '@shared/snapshot-schema';
 import {
   bucketIssues,
+  countInProgress,
   depHint,
   filterIssues,
   findInProgress,
@@ -194,6 +195,21 @@ describe('findInProgress', () => {
   it('returns null when nothing is in progress', () => {
     const issues = [make({ status: 'open' }), make({ status: 'closed' })];
     expect(findInProgress(issues)).toBeNull();
+  });
+});
+
+describe('countInProgress', () => {
+  it('counts every issue with status in_progress', () => {
+    const issues = [
+      make({ id: 'a', status: 'in_progress' }),
+      make({ id: 'b', status: 'open' }),
+      make({ id: 'c', status: 'in_progress' }),
+      make({ id: 'd', status: 'in_progress' }),
+    ];
+    expect(countInProgress(issues)).toBe(3);
+  });
+  it('returns 0 when nothing is in progress', () => {
+    expect(countInProgress([make({ status: 'open' })])).toBe(0);
   });
 });
 

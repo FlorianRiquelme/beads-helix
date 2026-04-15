@@ -9,7 +9,7 @@ test.describe('helix flight deck Level 2 — golden path', () => {
     await expect(page.getByTestId('priming-counts')).toContainText('2 idea');
     await expect(page.getByTestId('priming-detail')).toContainText('in progress');
 
-    // Each column header + count pill.
+    // Each column header (totals live in the PrimingHeader now).
     await expect(page.getByRole('heading', { name: 'idea' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'refined' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'ready' })).toBeVisible();
