@@ -11,7 +11,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -277,6 +277,45 @@ describe('CLI integration', () => {
       makeBeadsRepo(tmpDir, 'clean-proj');
       const { stderr } = runCLI(['snapshot', 'path', '--repo', tmpDir]);
       expect(stderr).toBe('');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Symlink invocation — regression guard for beads-helix-lva
+  // When the bin is invoked via an npm-link / global-install symlink,
+  // argv[1] is the symlink path but import.meta.url is the realpath.
+  // The is-entry-point check must survive that mismatch.
+  // -------------------------------------------------------------------------
+
+  describe('symlink invocation', () => {
+    function runViaSymlink(args: string[]): SpawnResult {
+      const linkDir = makeTmpDir();
+      const linkPath = join(linkDir, 'helix-link.js');
+      symlinkSync(CLI_PATH, linkPath);
+      const result = spawnSync('node', [linkPath, ...args], {
+        encoding: 'utf8',
+        timeout: 10_000,
+        env: process.env,
+      });
+      return {
+        stdout: result.stdout ?? '',
+        stderr: result.stderr ?? '',
+        status: result.status,
+      };
+    }
+
+    it('prints usage to stderr and exits 1 when invoked via symlink with no args', () => {
+      const { status, stderr } = runViaSymlink([]);
+      expect(status).toBe(1);
+      expect(stderr).toMatch(/Usage/i);
+    });
+
+    it('executes snapshot path and exits 0 when invoked via symlink', () => {
+      const tmpDir = makeTmpDir();
+      makeBeadsRepo(tmpDir, 'symlinked-proj');
+      const { status, stdout } = runViaSymlink(['snapshot', 'path', '--repo', tmpDir]);
+      expect(status).toBe(0);
+      expect(stdout).toContain('symlinked-proj');
     });
   });
 });

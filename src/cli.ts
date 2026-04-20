@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { dirname, resolve as pathResolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolveSnapshotPath, refresh } from './snapshot.js';
@@ -175,8 +175,20 @@ function viewDepsFromEnv(): Parameters<typeof runView>[0] extends infer P
   return deps;
 }
 
-// Only run main() when this module is the entry point, not when imported by tests
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+// Only run main() when this module is the entry point, not when imported by tests.
+// realpathSync resolves symlinks so the comparison holds under `npm link` /
+// `npm install -g`, where argv[1] is the bin symlink but import.meta.url is the target.
+function isEntryPoint(): boolean {
+  const argv1 = process.argv[1];
+  if (!argv1) return false;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(argv1)).href;
+  } catch {
+    return import.meta.url === pathToFileURL(argv1).href;
+  }
+}
+
+if (isEntryPoint()) {
   main(process.argv.slice(2)).catch((err) => {
     process.stderr.write(`Fatal: ${err}\n`);
     process.exit(1);
